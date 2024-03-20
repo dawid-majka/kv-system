@@ -19,46 +19,45 @@ struct KV {
     value: String,
 }
 
-struct AppState {
-    kv_client: Arc<Mutex<KvClient<Channel>>>,
-}
-
-impl AppState {
-    fn new(kv_client: KvClient<Channel>) -> Self {
-        AppState {
-            kv_client: Arc::new(Mutex::new(kv_client)),
-        }
-    }
-}
-
 async fn health_check() -> impl Responder {
     HttpResponse::Ok().body("Hello")
 }
 
-async fn get_value(path: web::Path<String>, app_state: web::Data<AppState>) -> impl Responder {
+async fn get_value(
+    path: web::Path<String>,
+    kv_client: web::Data<KvClient<Channel>>,
+) -> impl Responder {
     let key = path.into_inner();
     println!("Got GET request with key: {}", key);
 
-    let mut kv_client = app_state.kv_client.lock().await;
+    let mut kv_client = kv_client.get_ref().clone();
 
     let request = GetValueRequest { key };
 
-    let response = kv_client
-        .get_value(request)
-        .await
-        .expect("Should send get request to backend server");
+    let response = kv_client.get_value(request).await;
 
-    let value = response.into_inner().value;
+    match response {
+        Ok(response) => {
+            let value = response.into_inner().value;
 
-    println!("Value returned from backend server: {}", &value);
+            println!("Value returned from backend server: {}", &value);
 
-    HttpResponse::Ok().body(value)
+            HttpResponse::Ok().body(value)
+        }
+        Err(status) => {
+            println!("Error returned from backend server: {:?}", &status);
+            HttpResponse::NotFound().finish()
+        }
+    }
 }
 
-async fn insert_value(json_data: web::Json<KV>, app_state: web::Data<AppState>) -> impl Responder {
+async fn insert_value(
+    json_data: web::Json<KV>,
+    kv_client: web::Data<KvClient<Channel>>,
+) -> impl Responder {
     println!("Got POST request with KV: {:?}", json_data);
 
-    let mut kv_client = app_state.kv_client.lock().await;
+    let mut kv_client = kv_client.get_ref().clone();
 
     let KV { key, value } = json_data.into_inner();
 
@@ -82,14 +81,14 @@ async fn main() -> std::io::Result<()> {
         .await
         .expect("Connection with Backend service should be estabilished.");
 
-    let app_state = web::Data::new(AppState::new(kv_client));
+    let kv_client = web::Data::new(kv_client);
 
     HttpServer::new(move || {
         App::new()
             .route("/health_check", web::get().to(health_check))
             .route("/{key}", web::get().to(get_value))
             .route("/", web::post().to(insert_value))
-            .app_data(app_state.clone())
+            .app_data(kv_client.clone())
     })
     .bind("127.0.0.1:8000")?
     .run()
