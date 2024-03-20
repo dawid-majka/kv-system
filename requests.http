@@ -1,15 +1,34 @@
-GET http://localhost:8000/health_check HTTP/1.1
-
-###
-
+### Insert key-value 
 POST http://localhost:8000/ HTTP/1.1
 content-type: application/json
 
 {
     "key": "key1",
-    "value": "value1" 
+    "value": "value1"
 }
 
-###
-
+### Get by key
 GET http://localhost:8000/key1 HTTP/1.1
+
+
+
+### Invalid: key is missing
+GET http://localhost:8000/key2 HTTP/1.1
+
+### Invalid insert key is empty 
+POST http://localhost:8000/ HTTP/1.1
+content-type: application/json
+
+{
+    "key": "",
+    "value": "value1"
+}
+
+### Invalid insert value is empty 
+POST http://localhost:8000/ HTTP/1.1
+content-type: application/json
+
+{
+    "key": "key3",
+    "value": ""
+}

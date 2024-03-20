@@ -8,6 +8,9 @@ edition = "2021"
 tonic = "0.11.0"
 prost = "0.12.3"
 tokio = { version = "1.0", features = ["full"] }
+tracing = { version = "0.1", features = ["log"] }
+tracing-subscriber = { version = "0.3", features = ["registry", "env-filter"] }
+uuid = { version = "1.8.0", features = ["v4"] }
 
 
 [build-dependencies]
