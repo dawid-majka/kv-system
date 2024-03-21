@@ -1,0 +1,5 @@
+frontend:
+  host: 0.0.0.0
+
+backend:
+  host: "backend"
