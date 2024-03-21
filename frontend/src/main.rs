@@ -1,6 +1,7 @@
 use std::{io::ErrorKind, net::TcpListener, time::Duration};
 
 use frontend::{backend_server::kv_client::KvClient, run};
+use openssl::ssl::{SslAcceptor, SslFiletype, SslMethod};
 use tokio::time::sleep;
 use tonic::transport::Channel;
 use tracing::{error, info, warn};
@@ -33,7 +34,13 @@ async fn main() -> std::io::Result<()> {
         .await
         .map_err(|e| std::io::Error::new(ErrorKind::ConnectionRefused, e.to_string()))?;
 
-    run(listener, kv_client).await?.await
+    let mut builder = SslAcceptor::mozilla_intermediate(SslMethod::tls()).unwrap();
+    builder
+        .set_private_key_file("key.pem", SslFiletype::PEM)
+        .unwrap();
+    builder.set_certificate_chain_file("cert.pem").unwrap();
+
+    run(listener, kv_client, Some(builder)).await?.await
 }
 
 async fn try_connect(url: &str) -> Result<KvClient<Channel>, tonic::transport::Error> {

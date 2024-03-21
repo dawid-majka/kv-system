@@ -20,6 +20,12 @@ git clone https://github.com/dawid-majka/kv-system.git
 cd cd kv-system
 ```
 
+### Generate certificates
+
+```bash
+openssl req -newkey rsa:2048 -nodes -keyout key.pem -x509 -days 365 -out cert.pem
+```
+
 ### Running services:
 
 To start both services from root of a project:
@@ -35,7 +41,7 @@ Interact with the frontend service using `curl` or any HTTP client:
 **POST Request Example**
 
 ```bash
-curl -X POST http://localhost:8000/ \
+curl -X POST https://localhost:8000/ \
      -H "Content-Type: application/json" \
      -d '{"key":"key1", "value":"value1"}'
 ```
@@ -43,7 +49,7 @@ curl -X POST http://localhost:8000/ \
 **GET Request Example**
 
 ```bash
-curl http://localhost:8000/key1
+curl https://localhost:8000/key1
 ```
 
 Additional request are inside requests.http file.
@@ -66,7 +72,7 @@ cargo run -p frontend
 
 ### Tests
 
-```
+```bash
 cargo test -p backend
 cargo test -p frontend
 ```

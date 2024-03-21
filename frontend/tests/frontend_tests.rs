@@ -145,7 +145,7 @@ async fn spawn_app() -> String {
 
     let kv_client = KvClient::connect("http://[::1]:50052").await.unwrap();
 
-    let server = frontend::run(listener, kv_client)
+    let server = frontend::run(listener, kv_client, None)
         .await
         .expect("Frontend server should be initialized.");
 

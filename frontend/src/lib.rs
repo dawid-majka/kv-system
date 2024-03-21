@@ -1,6 +1,7 @@
 use std::net::TcpListener;
 
 use actix_web::{dev::Server, web, App, HttpResponse, HttpServer, Responder};
+use openssl::ssl::SslAcceptorBuilder;
 use serde::Deserialize;
 
 use backend_server::kv_client::KvClient;
@@ -105,19 +106,26 @@ async fn insert_value(
 pub async fn run(
     listener: TcpListener,
     kv_client: KvClient<Channel>,
+    ssl: Option<SslAcceptorBuilder>,
 ) -> Result<Server, std::io::Error> {
     let kv_client = web::Data::new(kv_client);
 
-    let server = HttpServer::new(move || {
+    let mut server = HttpServer::new(move || {
         App::new()
             .wrap(TracingLogger::default())
             .route("/health_check", web::get().to(health_check))
             .route("/{key}", web::get().to(get_value))
             .route("/", web::post().to(insert_value))
             .app_data(kv_client.clone())
-    })
-    .listen(listener)?
-    .run();
+    });
+
+    if let Some(builder) = ssl {
+        server = server.listen_openssl(listener, builder)?;
+    } else {
+        server = server.listen(listener)?;
+    }
+
+    let server = server.run();
 
     Ok(server)
 }
