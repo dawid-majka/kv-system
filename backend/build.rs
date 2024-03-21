@@ -1,7 +1,4 @@
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    tonic_build::configure()
-        .build_server(true)
-        .build_client(false)
-        .compile(&["../proto/key_value.proto"], &["../proto"])?;
+    tonic_build::configure().compile(&["../proto/key_value.proto"], &["../proto"])?;
     Ok(())
 }

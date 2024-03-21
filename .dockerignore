@@ -1,0 +1,8 @@
+target/
+tests/
+backend/tests/
+frontend/tests/
+README.md
+requests.http
+.gitignore
+.github/
