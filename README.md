@@ -24,6 +24,7 @@ cd cd kv-system
 
 ```bash
 openssl req -newkey rsa:2048 -nodes -keyout key.pem -x509 -days 365 -out cert.pem
+openssl req -newkey rsa:2048 -nodes -keyout key2.pem -x509 -days 365 -out cert2.pem -config cert.conf
 ```
 
 ### Running services:

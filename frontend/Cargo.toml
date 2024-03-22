@@ -14,7 +14,7 @@ name = "frontend"
 [dependencies]
 actix-web = { version = "4", features = ["openssl"] }
 serde = { version = "1", features = ["derive"] }
-tonic = "0.11.0"
+tonic = { version = "0.11.0", features = ["tls"] }
 prost = "0.12.3"
 tokio = { version = "1.0", features = ["full"] }
 tracing = { version = "0.1", features = ["log"] }
@@ -22,6 +22,7 @@ tracing-subscriber = { version = "0.3", features = ["registry", "env-filter"] }
 tracing-actix-web = "0.7.4"
 config = "0.14.0"
 openssl = "0.10.64"
+
 
 [dev-dependencies]
 reqwest = { version = "0.12.0", features = ["json"] }

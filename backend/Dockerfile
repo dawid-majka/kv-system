@@ -16,6 +16,9 @@ WORKDIR /app
 COPY --from=builder /app/target/release/backend backend
 COPY backend/configuration configuration
 
+COPY cert2.pem /app/cert2.pem
+COPY key2.pem /app/key2.pem
+
 ENV APP_ENVIRONMENT production
 
 ENTRYPOINT ["/app/backend"]

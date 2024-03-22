@@ -1,4 +1,4 @@
-use tonic::transport::Server;
+use tonic::transport::{Server, ServerTlsConfig};
 use tracing::{error, info};
 use uuid::Uuid;
 
@@ -10,6 +10,8 @@ use std::sync::Arc;
 
 use tokio::sync::Mutex;
 use tonic::{Request, Response, Status};
+
+use tonic::transport::Identity;
 
 pub mod backend_server {
     tonic::include_proto!("kv");
@@ -81,13 +83,24 @@ impl Kv for BackendService {
     }
 }
 
-pub async fn run(address: String) -> Result<(), Box<dyn std::error::Error>> {
+pub async fn run(
+    address: String,
+    identity: Option<Identity>,
+) -> Result<(), Box<dyn std::error::Error>> {
     let address = address.parse()?;
     let backend_service = BackendService::new();
 
     tracing::info!(message = "Starting server.", %address);
 
-    Server::builder()
+    let mut builder = Server::builder();
+
+    if let Some(identity) = identity {
+        builder = builder
+            .tls_config(ServerTlsConfig::new().identity(identity))
+            .expect("Should configure tls correctly.");
+    }
+
+    builder
         .trace_fn(|_| {
             let request_id = Uuid::new_v4();
             tracing::info_span!("Request span", %request_id)
